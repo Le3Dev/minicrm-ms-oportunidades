@@ -1,5 +1,7 @@
 # MS Oportunidades — Mini CRM (esqueleto para o aluno B)
 
+> Parte do sistema **Mini CRM (PJBL)**. Arquitetura (C4, Canvas, ARC42), frontends, infra e links de todos os repositórios: [Le3Dev/minicrm-arquitetura](https://github.com/Le3Dev/minicrm-arquitetura).
+
 Microsserviço do **funil de vendas** (Prospecção → Contato → Proposta → Fechado), gravado no **Azure SQL**. Quando uma oportunidade é fechada como **ganha**, ele publica o evento `OportunidadeGanha` no **Azure Service Bus**; a Azure Function consome e o MS Clientes passa o cliente para Ativo (RF30).
 
 > **Situação:** esqueleto funcional criado pela dupla A. Domínio completo do funil, duas slices prontas (criar e mover), adaptadores de Azure SQL e Service Bus, migração Flyway e testes (unitários, ArchUnit e API com H2). O aluno B completa as slices marcadas como **TODO** e o resto da entrega dele.
@@ -7,7 +9,7 @@ Microsserviço do **funil de vendas** (Prospecção → Contato → Proposta →
 | | URL |
 | --- | --- |
 | Swagger | `https://<ms-oportunidades>.azurecontainerapps.io/docs` |
-| Imagem Docker | `docker.io/<usuario-dockerhub>/minicrm-ms-oportunidades:v1` |
+| Imagem Docker | `docker.io/leandrocanha/minicrm-ms-oportunidades:latest` |
 
 ## Já pronto
 
@@ -19,7 +21,7 @@ Microsserviço do **funil de vendas** (Prospecção → Contato → Proposta →
 | Azure SQL com JPA, `@Version` (concorrência otimista) e migração Flyway `V1__oportunidades.sql` | `infrastructure/jpa`, `resources/db/migration` |
 | Publicação no Service Bus no formato exato do `asyncapi.yaml` (sem `SERVICEBUS_CONNECTION`, vai só para o log) | `infrastructure/eventos` |
 | ArchUnit: camadas, Java puro em domain/application, slices independentes | `ArquiteturaTest` |
-| CI com `mvn verify` e publicação da imagem em tag `ms-oportunidades-v*` | `.github/workflows/ms-oportunidades.yml` |
+| CI com `mvn verify` e publicação da imagem em tag `v*` (ex.: `v1.0.0`) | `.github/workflows/ci.yml` |
 
 ## TODO (aluno B)
 
