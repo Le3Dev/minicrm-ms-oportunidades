@@ -11,6 +11,14 @@ public interface OportunidadeRepository {
 
     Optional<Oportunidade> buscarPorId(long id);
 
-    /** TODO (aluno B): filtros por cliente e responsáveis para o funil (RF08, RF15). */
-    List<Oportunidade> listar();
+    /**
+     * Lista para o funil (RF08, RF15), mais recentes primeiro.
+     *
+     * @param clienteId    filtra por cliente; nulo ou vazio = todos
+     * @param responsaveis ids dos responsáveis visíveis; nulo ou vazio = todos
+     */
+    List<Oportunidade> listar(String clienteId, List<String> responsaveis);
+
+    /** Remove pelo id; não faz nada se não existir. */
+    void excluir(long id);
 }

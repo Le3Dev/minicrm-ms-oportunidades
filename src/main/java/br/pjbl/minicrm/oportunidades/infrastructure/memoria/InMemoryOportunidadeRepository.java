@@ -4,7 +4,7 @@ import br.pjbl.minicrm.oportunidades.domain.ConcorrenciaException;
 import br.pjbl.minicrm.oportunidades.domain.Oportunidade;
 import br.pjbl.minicrm.oportunidades.domain.OportunidadeRepository;
 
-import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -39,7 +39,19 @@ public class InMemoryOportunidadeRepository implements OportunidadeRepository {
     }
 
     @Override
-    public List<Oportunidade> listar() {
-        return new ArrayList<>(registros.values().stream().map(Oportunidade::restaurar).toList());
+    public List<Oportunidade> listar(String clienteId, List<String> responsaveis) {
+        boolean porCliente = clienteId != null && !clienteId.isBlank();
+        boolean porResponsaveis = responsaveis != null && !responsaveis.isEmpty();
+        return registros.values().stream()
+                .filter(e -> !porCliente || e.clienteId().equals(clienteId))
+                .filter(e -> !porResponsaveis || responsaveis.contains(e.responsavelId()))
+                .sorted(Comparator.comparing(Oportunidade.Estado::id).reversed())
+                .map(Oportunidade::restaurar)
+                .toList();
+    }
+
+    @Override
+    public void excluir(long id) {
+        registros.remove(id);
     }
 }
