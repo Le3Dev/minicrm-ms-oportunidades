@@ -31,4 +31,12 @@ public final class OportunidadeRequests {
             @Schema(example = "Preço", allowableValues = {"Preço", "Concorrente", "Sem verba", "Sem resposta"}) String motivoPerda,
             @Schema(example = "false") Boolean reabrir) {
     }
+
+    @Schema(name = "AtualizacaoOportunidade", description = "Só oportunidades abertas podem ser editadas.")
+    public record Atualizacao(
+            @Schema(example = "Plano anual — 30 licenças") @NotBlank @Size(min = 3, max = 160) String titulo,
+            @Schema(example = "27500.00") @NotNull @DecimalMin(value = "0.01") BigDecimal valor,
+            @Schema(example = "2026-12-20") LocalDate dataPrevista,
+            @Schema(example = "u5") @NotBlank String responsavelId) {
+    }
 }

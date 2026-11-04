@@ -35,8 +35,20 @@ public class JpaOportunidadeRepository implements OportunidadeRepository {
     }
 
     @Override
-    public List<Oportunidade> listar() {
-        return jpa.findAll().stream().map(JpaOportunidadeRepository::paraDominio).toList();
+    public List<Oportunidade> listar(String clienteId, List<String> responsaveis) {
+        boolean porCliente = clienteId != null && !clienteId.isBlank();
+        boolean porResponsaveis = responsaveis != null && !responsaveis.isEmpty();
+        List<OportunidadeEntity> linhas;
+        if (porCliente && porResponsaveis) linhas = jpa.findByClienteIdAndResponsavelIdInOrderByIdDesc(clienteId, responsaveis);
+        else if (porCliente) linhas = jpa.findByClienteIdOrderByIdDesc(clienteId);
+        else if (porResponsaveis) linhas = jpa.findByResponsavelIdInOrderByIdDesc(responsaveis);
+        else linhas = jpa.findAllByOrderByIdDesc();
+        return linhas.stream().map(JpaOportunidadeRepository::paraDominio).toList();
+    }
+
+    @Override
+    public void excluir(long id) {
+        if (jpa.existsById(id)) jpa.deleteById(id);
     }
 
     static OportunidadeEntity paraEntidade(Oportunidade.Estado e) {

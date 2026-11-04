@@ -71,4 +71,44 @@ class OportunidadeTest {
         assertThat(o.resultado()).isNull();
         assertThat(o.motivoPerda()).isNull();
     }
+
+    @Test
+    void atualizaCamposEValidaEnquantoAberta() {
+        Oportunidade o = gravada(Etapa.CONTATO);
+
+        o.atualizar("  Plano anual 30  ", new BigDecimal("27500"), LocalDate.of(2026, 12, 20), "u5", AGORA.plusSeconds(60));
+
+        assertThat(o.titulo()).isEqualTo("Plano anual 30");
+        assertThat(o.valor()).isEqualByComparingTo("27500.00");
+        assertThat(o.dataPrevista()).isEqualTo(LocalDate.of(2026, 12, 20));
+        assertThat(o.responsavelId()).isEqualTo("u5");
+        assertThat(o.atualizadaEm()).isEqualTo(AGORA.plusSeconds(60));
+        assertThat(o.etapa()).isEqualTo(Etapa.CONTATO);
+        assertThatThrownBy(() -> o.atualizar("A", BigDecimal.ZERO, null, " ", AGORA))
+                .isInstanceOfSatisfying(ValidacaoException.class, e -> assertThat(e.erros()).hasSize(3));
+        assertThat(o.titulo()).isEqualTo("Plano anual 30");
+    }
+
+    @Test
+    void fechadaNaoPodeSerEditada() {
+        Oportunidade o = gravada(Etapa.PROPOSTA);
+        o.mover("Fechado", "perdido", "Preço", false, AGORA);
+
+        assertThatThrownBy(() -> o.atualizar("Novo título", new BigDecimal("10"), null, "u2", AGORA))
+                .isInstanceOf(MovimentacaoInvalidaException.class);
+    }
+
+    @Test
+    void soGanhaFechadaNaoPodeSerExcluida() {
+        Oportunidade aberta = gravada(Etapa.PROPOSTA);
+        aberta.verificarExclusao();
+
+        Oportunidade perdida = gravada(Etapa.PROPOSTA);
+        perdida.mover("Fechado", "perdido", "Preço", false, AGORA);
+        perdida.verificarExclusao();
+
+        Oportunidade ganha = gravada(Etapa.PROPOSTA);
+        ganha.mover("Fechado", "ganho", null, false, AGORA);
+        assertThatThrownBy(ganha::verificarExclusao).isInstanceOf(MovimentacaoInvalidaException.class);
+    }
 }

@@ -18,19 +18,20 @@ import java.util.UUID;
  *   <li>Tirar do Fechado exige {@code reabrir = true}; ao reabrir, resultado e motivo são limpos.</li>
  *   <li>Entre etapas abertas o movimento é livre, inclusive para trás.</li>
  *   <li>Fechar como ganho gera o evento {@link OportunidadeGanha}.</li>
+ *   <li>Só oportunidades abertas podem ser editadas; as fechadas como ganho não podem ser excluídas.</li>
  * </ul>
  */
 public final class Oportunidade {
 
     private Long id;
     private final String clienteId;
-    private final String titulo;
+    private String titulo;
     private Etapa etapa;
     private Resultado resultado;
     private MotivoPerda motivoPerda;
-    private final BigDecimal valor;
-    private final LocalDate dataPrevista;
-    private final String responsavelId;
+    private BigDecimal valor;
+    private LocalDate dataPrevista;
+    private String responsavelId;
     private final Instant criadaEm;
     private Instant atualizadaEm;
     private Long versao;
@@ -122,6 +123,31 @@ public final class Oportunidade {
             return Optional.of(new OportunidadeGanha(UUID.randomUUID().toString(), id, clienteId, valor, responsavelId, agora));
         }
         return Optional.empty();
+    }
+
+    /** Edita título, valor, data prevista e responsável; só enquanto a oportunidade está aberta. */
+    public void atualizar(String novoTitulo, BigDecimal novoValor, LocalDate novaData, String novoResponsavelId, Instant agora) {
+        if (etapa == Etapa.FECHADO) {
+            throw new MovimentacaoInvalidaException("Oportunidade fechada não pode ser alterada; reabra antes de editar");
+        }
+        List<String> erros = new ArrayList<>();
+        String t = novoTitulo == null ? "" : novoTitulo.trim();
+        if (t.length() < 3 || t.length() > 160) erros.add("titulo: deve ter entre 3 e 160 caracteres");
+        if (novoValor == null || novoValor.signum() <= 0) erros.add("valor: deve ser maior que zero");
+        if (vazio(novoResponsavelId)) erros.add("responsavelId: obrigatório");
+        if (!erros.isEmpty()) throw new ValidacaoException("Oportunidade inválida", erros);
+        this.titulo = t;
+        this.valor = novoValor.setScale(2, RoundingMode.HALF_UP);
+        this.dataPrevista = novaData;
+        this.responsavelId = novoResponsavelId.trim();
+        this.atualizadaEm = agora;
+    }
+
+    /** Regra de exclusão: oportunidade fechada como ganha é histórico de venda e não pode ser apagada. */
+    public void verificarExclusao() {
+        if (etapa == Etapa.FECHADO && resultado == Resultado.GANHO) {
+            throw new MovimentacaoInvalidaException("Oportunidade fechada como ganha não pode ser excluída");
+        }
     }
 
     public Estado estado() {

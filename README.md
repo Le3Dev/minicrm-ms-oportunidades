@@ -1,10 +1,10 @@
-# MS Oportunidades — Mini CRM (esqueleto para o aluno B)
+# MS Oportunidades — Mini CRM
 
 > Parte do sistema **Mini CRM (PJBL)**. Arquitetura (C4, Canvas, ARC42), frontends, infra e links de todos os repositórios: [Le3Dev/minicrm-arquitetura](https://github.com/Le3Dev/minicrm-arquitetura).
 
 Microsserviço do **funil de vendas** (Prospecção → Contato → Proposta → Fechado), gravado no **Azure SQL**. Quando uma oportunidade é fechada como **ganha**, ele publica o evento `OportunidadeGanha` no **Azure Service Bus**; a Azure Function consome e o MS Clientes passa o cliente para Ativo (RF30).
 
-> **Situação:** esqueleto funcional criado pela dupla A. Domínio completo do funil, duas slices prontas (criar e mover), adaptadores de Azure SQL e Service Bus, migração Flyway e testes (unitários, ArchUnit e API com H2). O aluno B completa as slices marcadas como **TODO** e o resto da entrega dele.
+> **Situação:** as 6 slices do funil estão prontas (criar, mover, listar, buscar, atualizar e excluir), com adaptadores de Azure SQL e Service Bus, migração Flyway e testes (unitários, ArchUnit e API com H2).
 
 | | URL |
 | --- | --- |
@@ -23,16 +23,16 @@ Microsserviço do **funil de vendas** (Prospecção → Contato → Proposta →
 | ArchUnit: camadas, Java puro em domain/application, slices independentes | `ArquiteturaTest` |
 | CI com `mvn verify` e publicação da imagem em tag `v*` (ex.: `v1.0.0`) | `.github/workflows/ci.yml` |
 
-## TODO (aluno B)
+## Slices do aluno B
 
-- [ ] Slice **ListarFunil** — `GET /oportunidades?responsavelId=u2,u5&clienteId=` com as 4 etapas, contagem e soma (RF08, RF19). Ampliar `OportunidadeRepository.listar` com filtros.
-- [ ] Slice **BuscarOportunidade** — `GET /oportunidades/{id}`.
-- [ ] Slice **AtualizarOportunidade** — `PUT /oportunidades/{id}` (título, valor, data prevista, responsável), só para oportunidades abertas.
-- [ ] Slice **ExcluirOportunidade** — `DELETE /oportunidades/{id}`, só se não estiver fechada como ganha.
+| Slice | Rota | Regra |
+| --- | --- | --- |
+| `listarfunil` | `GET /oportunidades?responsavelId=u2,u5&clienteId=` | As 4 etapas com itens, quantidade e soma; `valorEmNegociacao` soma as abertas (RF08, RF19) |
+| `buscaroportunidade` | `GET /oportunidades/{id}` | 404 se não existir |
+| `atualizaroportunidade` | `PUT /oportunidades/{id}` | Título, valor, data prevista e responsável; só se estiver aberta |
+| `excluiroportunidade` | `DELETE /oportunidades/{id}` | 204; proibido se estiver fechada como ganha |
+
 - [ ] (Opcional) Padrão **Outbox**: gravar o evento numa tabela na mesma transação e publicar depois, para não perder evento se o Service Bus cair.
-- [ ] Registrar cada nova slice em `config/CasosDeUsoConfig.java` e criar o teste dela (o ArchUnit cobra as regras sozinho).
-
-Cada slice segue o mesmo molde: `XxxCommand` + `XxxHandler` (Java puro) em `application/xxx/`, um `XxxController` em `api/` e o teste em `src/test`.
 
 ## Rodar localmente
 
