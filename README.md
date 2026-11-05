@@ -8,7 +8,7 @@ Microsserviço do **funil de vendas** (Prospecção → Contato → Proposta →
 
 | | URL |
 | --- | --- |
-| Swagger | `https://<ms-oportunidades>.azurecontainerapps.io/docs` |
+| Swagger | `https://ms-oportunidades.kindbay-40f0b2c9.centralus.azurecontainerapps.io/docs` |
 | Imagem Docker | `docker.io/leandrocanha/minicrm-ms-oportunidades:latest` |
 
 ## Já pronto
