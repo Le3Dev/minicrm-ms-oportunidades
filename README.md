@@ -11,7 +11,26 @@ Microsserviço do **funil de vendas** (Prospecção → Contato → Proposta →
 | Swagger | `https://ms-oportunidades.kindbay-40f0b2c9.centralus.azurecontainerapps.io/docs` |
 | Imagem Docker | `docker.io/leandrocanha/minicrm-ms-oportunidades:latest` |
 
-## Já pronto
+## Arquitetura do código
+
+**Clean Architecture** em quatro camadas, com a camada de aplicação em **vertical slices** (um pacote por caso de uso):
+
+```
+br.pjbl.minicrm.oportunidades
+├── domain/            Java puro: Oportunidade, Etapa, Resultado, MotivoPerda, portas (Repository, EventoPublisher), exceções
+├── application/       uma slice por caso de uso: criaroportunidade, moveroportunidade, listarfunil,
+│                      buscaroportunidade, atualizaroportunidade, excluiroportunidade
+├── infrastructure/    jpa (Azure SQL), eventos (Azure Service Bus), memoria (testes/local)
+└── api/               controllers REST, DTOs e tratamento de erros (Swagger via springdoc)
+```
+
+Dependências: `api → application → domain` e `infrastructure → domain`; o `ArquiteturaTest` (ArchUnit) garante isso.
+
+## Tecnologias
+
+Java 21, Spring Boot 3.5, Spring Data JPA, Azure SQL Database (SQL Server), Flyway, Azure Service Bus, springdoc-openapi (Swagger UI), Bean Validation, JUnit 5, ArchUnit, H2 (testes), Docker, Azure Container Apps, GitHub Actions.
+
+## Implementado
 
 | Item | Onde |
 | --- | --- |
@@ -23,7 +42,7 @@ Microsserviço do **funil de vendas** (Prospecção → Contato → Proposta →
 | ArchUnit: camadas, Java puro em domain/application, slices independentes | `ArquiteturaTest` |
 | CI com `mvn verify` e publicação da imagem em tag `v*` (ex.: `v1.0.0`) | `.github/workflows/ci.yml` |
 
-## Slices do aluno B
+## Demais slices
 
 | Slice | Rota | Regra |
 | --- | --- | --- |
